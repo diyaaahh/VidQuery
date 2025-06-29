@@ -1,6 +1,29 @@
+# Updated requirements.txt for Hybrid Video Processing System
+
+# Core PyTorch and Vision
 torch>=2.0.0
 torchvision>=0.15.0
+
+# CLIP for visual embeddings
 clip @ git+https://github.com/openai/CLIP.git
+
+# Transformers for BLIP2
+transformers>=4.25.0
+accelerate>=0.20.0
+
+# Sentence transformers for text embeddings
+sentence-transformers>=2.2.2
+
+# Vector database
 qdrant-client>=1.1.1
-numpy>=1.21.0  # Required by CLIP and torch
-Pillow>=9.0.0  # Required by CLIP for image processing
+
+# Image and video processing
+Pillow>=9.0.0
+opencv-python>=4.5.0
+
+# Scientific computing
+numpy>=1.21.0
+scipy>=1.7.0
+
+# Utilities
+tqdm>=4.60.0  # Progress bars for batch processing
