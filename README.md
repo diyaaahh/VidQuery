@@ -1,90 +1,153 @@
-# VidQuery - Video Search Engine
+# Video Search Engine
 
-A video search engine that allows you to search through videos using both visual descriptions and spoken dialogue. The system uses CLIP for visual scene search and BERT for caption-based search.
+A FastAPI-based video search engine that supports two types of search:
+1. **Audio Search**: Search using Whisper transcriptions
+2. **Video Search**: Visual search using CLIP + BLIP hybrid approach (weighted 0.6 CLIP + 0.4 BLIP)
 
 ## Features
 
-- 🔍 Scene-based search using natural language descriptions
-- 💬 Caption-based search using spoken dialogue
-- ⚡ Fast vector similarity search using Qdrant
-- 🎯 High-accuracy results using state-of-the-art AI models
+- Upload videos and automatically process them for search
+- **Audio Search**: Uses Whisper to transcribe audio and search through spoken content
+- **Visual Search**: Uses CLIP for visual understanding and BLIP for image captioning
+- Hybrid approach with weighted results (0.6 visual + 0.4 caption)
+- Vector storage using Qdrant
+- RESTful API with FastAPI
 
 ## Prerequisites
 
 - Python 3.8+
-- Docker (for running Qdrant)
-- CUDA-capable GPU (recommended for faster processing)
+- Docker (for Qdrant)
+- CUDA-capable GPU (optional, for faster processing)
 
-## Installation
+## Setup
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd VidQuery
-```
+### 1. Start Qdrant Database
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Start Qdrant using Docker:
 ```bash
 docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant
 ```
 
-## Project Structure
+### 2. Install Dependencies
 
-- `main.py` - Main search interface
-- `processVideo.py` - Video processing and embedding generation
-- `caption.py` - Caption processing and embedding generation
-- `captions.txt` - Video captions file
-- `Video/` - Directory containing video files
-
-## Usage
-
-### 1. Processing a Video
-
-To process a new video and generate embeddings:
-
-1. Place your video file in the `Video/` directory
-2. Run the video processing script:
 ```bash
-python processVideo.py
+pip install -r requirements.txt
 ```
 
-### 2. Processing Captions
+### 3. Run the Server
 
-To process video captions:
-1. Run the caption processing script:
-```bash
-python caption.py
-```
-
-### 3. Searching the Video
-
-Run the main search interface:
 ```bash
 python main.py
 ```
 
-You can then:
-1. Choose search type:
-   - Scene-based search (visual description)
-   - Dialogue-based search (spoken words)
-2. Enter your search query
-3. View matching timestamps and scores
+The server will start on `http://localhost:8000`
 
-## Technical Details
+## API Endpoints
 
-### Models Used
+### Upload Video
+```http
+POST /upload-video
+```
+Upload a video file for processing. Supports MP4, AVI, MOV, MKV formats.
 
-- **CLIP (ViT-B/32)**: For visual scene understanding and search
-- **BERT (all-MiniLM-L6-v2)**: For caption-based search
-- **Qdrant**: Vector database for efficient similarity search
+### Search Video (Visual)
+```http
+POST /search/video
+```
+Search using visual content (CLIP + BLIP hybrid approach).
+
+**Request Body:**
+```json
+{
+  "query": "person drinking coffee",
+  "top_k": 5
+}
+```
+
+### Search Audio
+```http
+POST /search/audio
+```
+Search using audio transcriptions (Whisper).
+
+**Request Body:**
+```json
+{
+  "query": "add sugar to the mixture",
+  "top_k": 5
+}
+```
+
+### Collection Status
+```http
+GET /collections/status
+```
+Check the status of Qdrant collections.
+
+## Project Structure
+
+```
+├── main.py                 # FastAPI server
+├── audio_processor.py      # Whisper audio processing
+├── video_processor.py      # CLIP + BLIP video processing
+├── search_engine.py        # Search functions
+├── requirements.txt        # Dependencies
+└── README.md              # This file
+```
+
+## How It Works
+
+### Audio Processing
+1. Extracts audio from video using FFmpeg
+2. Transcribes audio using Whisper
+3. Generates embeddings using SentenceTransformer
+4. Stores in Qdrant for search
+
+### Video Processing
+1. Extracts frames every 2 seconds
+2. Generates CLIP embeddings for visual understanding
+3. Creates captions using BLIP
+4. Generates text embeddings for captions
+5. Stores both in separate Qdrant collections
+
+### Search
+- **Audio Search**: Direct text similarity search on Whisper transcriptions
+- **Video Search**: Hybrid approach combining CLIP visual similarity (0.6 weight) and BLIP caption similarity (0.4 weight)
+
+## Usage Example
+
+```bash
+# Upload a video
+curl -X POST "http://localhost:8000/upload-video" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@your_video.mp4"
+
+# Search video content
+curl -X POST "http://localhost:8000/search/video" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "person cooking", "top_k": 5}'
+
+# Search audio content
+curl -X POST "http://localhost:8000/search/audio" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "add ingredients", "top_k": 5}'
+```
+
+## Configuration
+
+- **Frame Extraction**: Every 2 seconds (configurable in `video_processor.py`)
+- **Batch Size**: 4 images per batch for BLIP processing
+- **Embedding Models**: 
+  - Visual: CLIP ViT-B/32
+  - Text: all-MiniLM-L6-v2
+  - Captioning: BLIP base model
+  - Audio: Whisper base model
+
+## Performance Notes
+
+- BLIP1 is used instead of BLIP2 for faster processing
+- GPU acceleration is automatically detected and used when available
+- Batch processing for efficient GPU utilization
+- Memory cleanup after each batch to prevent OOM errors
