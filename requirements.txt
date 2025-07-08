@@ -4,3 +4,4 @@ clip @ git+https://github.com/openai/CLIP.git
 qdrant-client>=1.1.1
 numpy>=1.21.0  # Required by CLIP and torch
 Pillow>=9.0.0  # Required by CLIP for image processing
+sentence-transformers>=2.2.0  # For caption embeddings
