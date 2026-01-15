@@ -1,0 +1,52 @@
+[{
+    "question":"where is the scene when the person enters the store",
+    "expected_time":[0.26],
+    "obtained_time":[0.44,0.26]
+},
+{
+    "question":"where is the scene when the person takes out bottle from shelf",
+    "expected_time":[0.44, 0.26, 1.03],
+    "obtained_time":[ 1.03,0.26]
+},
+{
+    "question":"where is the scene when the person picks out his cell phone",
+    "expected_time":[1.03],
+    "obtained_time":[1.16,1.03]
+},
+{
+    "question":"where is the scene when the person rides a bike",
+    "expected_time":[0.05],
+    "obtained_time":[0.05]
+},
+{
+    "question":"where is the scene when the person grabs the coffee",
+    "expected_time":[1.03],
+    "obtained_time":[1.03]
+},
+{
+    "question":"where is the scene when there is a buddha statue",
+    "expected_time":[0.00],
+    "obtained_time":[0.00]
+},
+{
+    "question":"where is the scene when there is a waterfall",
+    "expected_time":[0.00],
+    "obtained_time":[0.00]
+},
+{
+    "question":"where is the scene when there are birds",
+    "expected_time":[0.25],
+    "obtained_time":[0.00]
+},
+{
+    "question":"where is the scene with multiple statues",
+    "expected_time":[1.30],
+    "obtained_time":[1.30]
+},
+{
+    "question":"where is the scene with japanese flag",
+    "expected_time":[2.04],
+    "obtained_time":[2.04]
+}
+
+]

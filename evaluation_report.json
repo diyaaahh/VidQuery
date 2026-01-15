@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-01-13T20:27:50.359424",
+  "modules": {
+    "Scene Multimodal": {
+      "MRR": 1.0,
+      "MAP": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@5": 0.28,
+      "Recall@5": 1.0,
+      "num_queries": 5
+    },
+    "Scene Visual": {
+      "MRR": 1.0,
+      "MAP": 1.4,
+      "NDCG@5": 1.252371901428583,
+      "Precision@5": 0.36,
+      "Recall@5": 1.4,
+      "num_queries": 5
+    },
+    "Frame Fusion": {
+      "MRR": 1.0,
+      "MAP": 1.0555555555555556,
+      "NDCG@5": 1.0271196607041018,
+      "Precision@5": 0.2666666666666667,
+      "Recall@5": 1.0555555555555556,
+      "num_queries": 9
+    }
+  },
+  "summary": {
+    "best_mrr": "Scene Multimodal",
+    "best_map": "Scene Visual",
+    "best_ndcg": "Scene Visual"
+  }
+}
