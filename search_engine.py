@@ -123,15 +123,15 @@ def _scene_search_multimodal_specific_video(
     # Create multimodal query embedding with same weights as scene creation
     query_embedding = create_multimodal_query_embedding(query, clip_weight, caption_weight)
     
-    # Search scene collection
-    scene_results = qdrant.search(
+    # Use query_points instead of search (v1.16.2+)
+    scene_results = qdrant.query_points(
         collection_name=collections['scenes'],
-        query_vector=query_embedding.tolist(),
+        query=query_embedding.tolist(),
         limit=top_k
     )
     
     results = []
-    for result in scene_results:
+    for result in scene_results.points:
         results.append((
             result.payload['start_timestamp'],
             {
@@ -187,15 +187,15 @@ def _scene_search_specific_video(query: str, video_id: str, top_k: int) -> List[
         query_clip = clip.tokenize([query]).to(device)
         query_embedding = clip_model.encode_text(query_clip).squeeze().detach().cpu().numpy()
     
-    # Search scene collection
-    scene_results = qdrant.search(
+    # Use query_points instead of search (v1.16.2+)
+    scene_results = qdrant.query_points(
         collection_name=collections['scenes'],
-        query_vector=query_embedding.tolist(),
+        query=query_embedding.tolist(),
         limit=top_k
     )
     
     results = []
-    for result in scene_results:
+    for result in scene_results.points:
         results.append((
             result.payload['start_timestamp'],
             {
@@ -245,14 +245,15 @@ def _search_specific_video(query: str, video_id: str, top_k: int) -> List[Tuple[
             query_clip = clip.tokenize([query]).to(device)
             query_embedding_clip = clip_model.encode_text(query_clip).squeeze().detach().cpu().numpy()
         
-        clip_results = qdrant.search(
+        # Use query_points instead of search (v1.16.2+)
+        clip_results = qdrant.query_points(
             collection_name=collections['clip'],
-            query_vector=query_embedding_clip.tolist(),
+            query=query_embedding_clip.tolist(),
             limit=top_k
         )
         
         # Apply CLIP weight (0.6)
-        for result in clip_results:
+        for result in clip_results.points:
             weighted_score = result.score * 0.6
             results.append((
                 result.payload['timestamp'],
@@ -267,14 +268,15 @@ def _search_specific_video(query: str, video_id: str, top_k: int) -> List[Tuple[
     if collections['caption'] in existing_collections:
         query_embedding_caption = sentence_model.encode([query])[0]
         
-        caption_results = qdrant.search(
+        # Use query_points instead of search (v1.16.2+)
+        caption_results = qdrant.query_points(
             collection_name=collections['caption'],
-            query_vector=query_embedding_caption.tolist(),
+            query=query_embedding_caption.tolist(),
             limit=top_k
         )
         
         # Apply caption weight (0.4)
-        for result in caption_results:
+        for result in caption_results.points:
             weighted_score = result.score * 0.4
             results.append((
                 result.payload['timestamp'],
@@ -344,13 +346,14 @@ def _multimodal_fusion_specific_video(query: str, video_id: str, top_k: int) -> 
             query_clip = clip.tokenize([query]).to(device)
             query_embedding_clip = clip_model.encode_text(query_clip).squeeze().detach().cpu().numpy()
         
-        clip_results = qdrant.search(
+        # Use query_points instead of search (v1.16.2+)
+        clip_results = qdrant.query_points(
             collection_name=collections['clip'],
-            query_vector=query_embedding_clip.tolist(),
+            query=query_embedding_clip.tolist(),
             limit=search_limit
         )
         
-        for result in clip_results:
+        for result in clip_results.points:
             frame_idx = result.payload['frame_index']
             clip_results_dict[frame_idx] = {
                 'score': result.score,
@@ -362,13 +365,14 @@ def _multimodal_fusion_specific_video(query: str, video_id: str, top_k: int) -> 
     if collections['caption'] in existing_collections:
         query_embedding_caption = sentence_model.encode([query])[0]
         
-        caption_results = qdrant.search(
+        # Use query_points instead of search (v1.16.2+)
+        caption_results = qdrant.query_points(
             collection_name=collections['caption'],
-            query_vector=query_embedding_caption.tolist(),
+            query=query_embedding_caption.tolist(),
             limit=search_limit
         )
         
-        for result in caption_results:
+        for result in caption_results.points:
             frame_idx = result.payload['frame_index']
             caption_results_dict[frame_idx] = {
                 'score': result.score,
@@ -436,13 +440,14 @@ def audio_search(query: str, video_id: str = None, top_k: int = 5):
         
         query_embedding = sentence_model.encode([query])[0]
         
-        results = qdrant.search(
+        # Use query_points instead of search (v1.16.2+)
+        results = qdrant.query_points(
             collection_name=collection_name,
-            query_vector=query_embedding.tolist(),
+            query=query_embedding.tolist(),
             limit=top_k
         )
         
-        return results
+        return results.points
     else:
         # Search all video audio collections
         video_ids = get_available_videos()
@@ -458,13 +463,14 @@ def audio_search(query: str, video_id: str = None, top_k: int = 5):
             
             query_embedding = sentence_model.encode([query])[0]
             
-            results = qdrant.search(
+            # Use query_points instead of search (v1.16.2+)
+            results = qdrant.query_points(
                 collection_name=collection_name,
-                query_vector=query_embedding.tolist(),
+                query=query_embedding.tolist(),
                 limit=top_k
             )
             
-            all_results.extend(results)
+            all_results.extend(results.points)
         
         # Sort by score
         all_results.sort(key=lambda x: x.score, reverse=True)
